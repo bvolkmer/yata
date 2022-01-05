@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+
+  backend:
+    build: ./backend
+    ports:
+      - 5000:5000
+    environment:
+      - DATABASE_URL=sqlite:///data/data.sqlite
+      - CORS_ALLOW_ORIGINS=http://localhost:8000
+    volumes:
+      - ./backend:/app
+      - ./data:/app/data
+    command: uvicorn src.main:app --reload --host 0.0.0.0 --port 5000
+
+  frontend:
+    build: ./frontend
+    ports:
+      - 8080:80

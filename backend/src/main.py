@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timedelta
 from math import exp
 from typing import List, Optional
@@ -13,6 +14,14 @@ import sqlalchemy
 WEIGHT_PRIO = 1.
 WEIGHT_DEADLINE = 100.
 WEIGHT_SPEND_TIME = 1.
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS")
+if CORS_ALLOW_ORIGINS is None:
+    CORS_ALLOW_ORIGINS = []
+else:
+    CORS_ALLOW_ORIGINS = CORS_ALLOW_ORIGINS.split(",")
+
 
 app = FastAPI()
 database = databases.Database("sqlite:///data/data.sqlite")

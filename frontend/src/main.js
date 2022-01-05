@@ -7,7 +7,10 @@ import router from "./router";
 import store from "./store";
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = "http://localhost:8000/";
+axios.defaults.baseURL = process.env.VUE_APP_API_URL;
+//console.log(process.env.API_URL)
+//axios.defaults.baseURL = "http://localhost:5000/";
+
 
 Vue.config.productionTip = false;
 
