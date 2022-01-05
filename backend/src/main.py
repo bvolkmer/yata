@@ -6,7 +6,6 @@ from typing import List, Optional
 import databases
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 import ormar
 import sqlalchemy
@@ -24,13 +23,12 @@ else:
 
 
 app = FastAPI()
-database = databases.Database("sqlite:///data/data.sqlite")
+database = databases.Database(DATABASE_URL)
 metadata = sqlalchemy.MetaData()
 app.state.database = database
 
-# app.mount("/ui", StaticFiles(directory="./frontend/public", html=True), name="ui")
 
-app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:8080"],
+app.add_middleware(CORSMiddleware, allow_origins=CORS_ALLOW_ORIGINS,
                    allow_credentials=True,
                    allow_methods=["*"],
                    allow_headers=["*"])
@@ -87,8 +85,8 @@ class Task(ormar.Model):
 
 @app.get("/")
 def ui_route():
-    return "Hello World from backend!"
-    # return RedirectResponse("/docs")
+    #return "Hello World from backend!"
+    return RedirectResponse("/docs")
 
 
 @app.get("/create_db")
@@ -97,7 +95,7 @@ def create_db():
     metadata.create_all(engine)
 
 
-@app.get("/tasks/", response_model=List[Task])
+@app.get("/api/tasks/", response_model=List[Task])
 async def read_tasks(category_id: Optional[int] = None):
     if category_id is not None:
         return await Task.objects.filter((Task.category is not None) &
@@ -106,17 +104,17 @@ async def read_tasks(category_id: Optional[int] = None):
     return await Task.objects.select_related("category").all()
 
 
-@app.get("/tasks/{id}", response_model=Task)
+@app.get("/api/tasks/{id}", response_model=Task)
 async def read_task(id: int):
     return await Task.objects.select_related("category").get_or_none(id=id)
 
 
-@app.post("/tasks/")
+@app.post("/api/tasks/")
 async def create_task(task: Task):
     return await task.save_related()
 
 
-@app.delete("/tasks/{id}")
+@app.delete("/api/tasks/{id}")
 async def delete_task(id: int):
     if await Task.objects.delete(id=id) > 0:
         return "success"
@@ -124,22 +122,22 @@ async def delete_task(id: int):
         return None
 
 
-@app.post("/categories/", response_model=Category)
+@app.post("/api/categories/", response_model=Category)
 async def create_category(category: Category):
     return await category.save()
 
 
-@app.get("/categories/", response_model=List[Category])
+@app.get("/api/categories/", response_model=List[Category])
 async def get_categories():
     return await Category.objects.all()
 
 
-@app.get("/categories/{id}", response_model=Category)
+@app.get("/api/categories/{id}", response_model=Category)
 async def get_category(id: int):
     return await Category.objects.select_related(Category.tasks).get(id=id)
 
-@app.delete("/categories/{id}")
-async def delete_task(id: int):
+@app.delete("/api/categories/{id}")
+async def delete_category(id: int):
     if await Category.objects.delete(id=id) > 0:
         return "success"
     else:
